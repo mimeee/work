@@ -23,7 +23,7 @@
 
 - 可以看到项目的app目录很简单
 
-    ![app direction](20190524angularjs_simple_1.png)
+    ![app direction](image/20190524angularjs_simple_1.png)
 
     打开index.html有如下代码
 
