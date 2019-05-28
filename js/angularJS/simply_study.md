@@ -1,7 +1,7 @@
 # 简单学习AngularJS
 
-![参考网站](https://www.angularjs.net.cn/phonecat/)
-![参考网站](https://www.angularjs.net.cn/phonecat/4.html)
+[参考网站](https://www.angularjs.net.cn/phonecat/)
+[参考网站](https://www.angularjs.net.cn/phonecat/4.html)
 
 ## 学习步骤
 
