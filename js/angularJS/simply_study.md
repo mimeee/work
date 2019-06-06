@@ -53,7 +53,7 @@
 
 - angularJS大概的项目脉络
 
-  由于angularJS是一个标准的MVC框架，所以由三个部分组成，module、view、controller。但是在angularJS中也由组件的概念。
+  由于angularJS是一个标准的MVC框架，所以由三个部分组成，module、view、controller。但是在angularJS中也有组件的概念。
 
   其中module的声明方法是 `angular.module('[module-name]', [])`；使用 `ng-app` 来为html选择注入哪个模块(可以写在html标签中或者局部标签如div中)。
 
@@ -109,7 +109,7 @@
     </html>
   ```
 
-  **初始的angular会主动打开index.html文件同时去加载app.js文件。说是由bootstrap来控制引导应用程序。但具体还不知道怎么设置**
+  **<font color="ff0f01">问题：初始的angular会主动打开index.html文件同时去加载app.js文件。说是由bootstrap来控制引导应用程序。但具体还不知道怎么设置</font>**
 
   当注册完 module；也就是执行`var phonecatApp = angular.module('phonecatApp', []);`；这里 `phonecatApp` 返回的是一个object。打印其可以看到他的键值对。
 
@@ -192,13 +192,134 @@
     })
     ```
 
-    这里的filter会去匹配整个对象而不仅仅是该对象在页面中显示出来的部分。
+    这里的filter会去匹配整个对象而不仅仅是该对象在页面中显示出来的部分。使用filter命令的时候，不可以使用在其前面使用track by。
+
+  `<li ng-repeat="phone in $ctrl.phones track by $index | filter:keyword"></li>`  <font color="red">wrong</font>
+
+  `<li ng-repeat="phone in $ctrl.phones| filter:keyword track by $index "></li>`  <font color="green">right</font>
+
+  
 
     ![compoennt](image/20190524angularjs_simple_5.png)
 
     上图可以看见过滤 *NEX*，list中的li中第二第三个item并没有 *NEX*但是他们没有过滤掉，是因为这里只是显示了phones.name但是phones.snippet没有显示，而phones.snippet却包含 *NEX*，所以他们没有被过滤掉。
 
-    **问题：这里的数据绑定是直接通过ng-model指令执行的，那ng-model这个指令把数据绑定到了哪里**
+    **<font color="ff0f01">问题：这里的数据绑定是直接通过ng-model指令执行的，那ng-model这个指令把数据绑定到了哪里</font>**
+
+对于服务(依赖)的注入，angular有内置的已经注入的服务如: `$scope`,`$http`。直接在controller的function引入。`phonecatApp.controller('PhoneListController', function PhoneListController($scope,$http) {})`
+
+变量绑定：使用`ng-`来绑定变量，如`ng-src`; **<font color="ff0f01">问题：但是`href`却可以直接获取`{{}}`里面的值,为什么</font>**。
+
+
+
+### 关于路由
+
+路由是单独服务，需要引入使用。步骤如下：
+
+1. 在html中引入![](image/20190531angularjs_simple_6.png)
+2. 在使用该路由的module中设置路由，或者在其他文件也可，但是必须要在该module下注册
+
+```js
+// app.module.js
+'use strict';
+
+// Define the `phonecatApp` module
+angular.module('phonecatApp', [
+  // 引入route依赖
+  'ngRoute',
+  'phoneList'
+]);
+//设置路由
+angular.module('phonecatApp').config(['$routeProvider',function($routeProvider){
+  $routeProvider.when('/user',{
+    templateUrl: '/user/user.html',
+    controller: "user"
+  }).when('/admin',{
+    templateUrl:'/admin/admin.html',
+    controller:'admin'
+  }).otherwise({
+    redirectTo: '/user'
+  })
+}])
+```
+
+
+
+3. 在跳转到其他页面的时候，需要加上`#!` ![](image/20190531angularjs_simple_7.png)
+
+   
+
+**<font color="f839ff">注意！！在module模块下注册的时候，不要使用`angular.module('phonecatApp',[])`,</font>而是使用<font color="2099ff">`angular.module('phonecatApp')`</font>。否则该phonecatApp模块会被重写。**
+
+
+
+### 自定义筛选器
+
+可以定义一个module专门写filter，如果在其他module中使用就需要引入。也可以在要使用的module中直接定义
+
+```js
+angular.module('phonecatApp').filter('cc',function(){
+    var i = 1;
+    return function(input){
+      // 这里input如果是由controller传入，即$scope中定义，则会调用两次
+        console.log(input);
+        console.log(i);
+        i++;
+        return true;
+    }
+})
+```
+
+  **<font color="ff0f01">问题：这里input如果是由controller传入，即$scope中定义，则会调用两次</font>**
+
+![](image/20190531angularjs_simple_8.png)
+
+
+
+### 事件绑定
+
+使用`ng-event`绑定事件函数，绑定的函数要加上`()`方可执行。`<button ng-click="onClick(div.id)">click</button>`
+
+#### 关于angular-resource
+
+angular-resource主要是为了RESTful所包装的服务，也就是http请求。使用步骤：
+
+1. `npm i angular-resource`
+2. 在html引入 `    <script src="lib/angular-resource/angular-resource.js"></script>`
+3. 在某一个module下引入依赖 
+
+```js
+// phone.module.js
+var app = angular.module('phoneList', ['ngResource'])
+```
+
+4. 使用工厂模式创建关于`resource`的服务
+
+```js
+app.factory('phone', ['$resource',
+function($resource){
+  return $resource('phones/:phoneId.json', {}, {
+    query: {method:'GET', params:{phoneId:'pppphones'}, isArray:true}
+  });
+}
+]);
+```
+
+5. 就可以在该module下面的controller中使用该服务
+
+```js
+angular.
+module('phoneList').
+component('phoneList', {
+  templateUrl: 'phone-list/phone-list.template.html',
+  controller: ['$scope', '$http','phone', function PhoneListController($scope, $http, phone){
+    console.log(phone);
+  }]})
+```
+
+
+
+
 
 - 基本语法
 

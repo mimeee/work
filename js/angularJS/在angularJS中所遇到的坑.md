@@ -214,7 +214,7 @@ $scope.c_name = "kuku";
 **问题2：查看html节点发现：莫名其妙多了一个li，并且还是selected的! what? why?并且在子选择框内没有多余的空空白**
 ![7](image/20190527angularjs_bug_7.png)
 
-做一个实验，看看`v-model`在没有其他干扰的条件下，是不是可以让select选择框有默认值
+做一个实验，看看`ng-model`在没有其他干扰的条件下，是不是可以让select选择框有默认值
 
 ```html
 <!-- index.html -->
@@ -272,6 +272,21 @@ $scope.test_select = 5;
 
 **总结一下：步骤在下面。会出现空白节点的原因有两点: 使用了`ng-model`绑定了值，但没有赋值；使用了`ng-model`绑定了值，赋值了，但值的数据类型与选择框里的value数据类型不相符**。可以在开发者工具中查看select中value的数据类型。而空白节点的出现就代表占据了selected的位置
 
+**解决空白节点的方法**：
+
+1. 如果使用`ng-repeat`则在repeat之前写一个默认的option，这样angular会默认选择该选项,所以不会生成空白节点。
+
+   ```html
+   <select name="" id="" ng-model="k">
+   <option value="">null</option>
+   <option value="{{$index}}" ng-repeat="c in list track by $index">{{c.name}}</option>
+   </select>
+   ```
+
+   
+
+2. 为绑定的`ng-model`设定初始值。
+
 ![12](image/20190528angular_bug_12.png)
 
 1. 使用 `ng-options`来生成option，则不会出现空白的option。
@@ -298,7 +313,7 @@ $scope.test_select = 5;
 
    可以看到上图中有初始值，同时没有多余的节点。
 
-2. 找到空白节点出现的原因。通过上面的例子，在没有为select赋予初始值的条件下，angular会主动生成一个空白的`<li value="? number: 1 ?" selected></li>`。我认为这是`li`的作用有两点：
+2. 找到空白节点出现的原因。通过上面的例子，在没有为select(绑定了`ng-model`)赋予初始值的条件下，angular会主动生成一个空白的`<li value="? number: 1 ?" selected></li>`。我认为这是`li`的作用有两点：
 
    1. 对用户来说，不会误以为选择了某一个选项，其实没有选择
    2. 对于开发者来说，为该变量设置了一个初始值，其值为空。为某一个变量赋初始值据说是一个好习惯喔
