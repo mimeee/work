@@ -177,3 +177,113 @@
 
   显示效果如下图:![pic](image/20190522angularSimple_7.png)
 
+## 案例学习
+
+1. 带`*`的指令在angular中代表结构性指令。也就是会通过添加，删除和操纵他们的宿主元素等方式塑造或重塑DOM结构。比如 `*ngFor`,`*ngIf`
+2. 使用 `[]` 为判定语法，用来表示在html模板中表示动态的属性比如 `[title]="123"`。 使用 `(click)="fn()"` 来在html中绑定事件
+3. 装饰器
+  - `@Component`是一个组件装饰器，在这里输入组建的元数据，包括模板(html),样式(css),标签(在其他页面使用的tag)
+
+  ```js
+    import { Component, OnInit } from '@angular/core';
+    @Component({
+      selector: 'app-product-alerts',
+      templateUrl: './product-alerts.component.html',
+      styleUrls: ['./product-alerts.component.css']
+    })
+    export class ProductAlertsComponent implements OnInit {
+      constructor() { }
+      ngOnInit() { }
+    }
+  ```
+
+  - `@input`是一个输入装饰器，表示从外部接受的数据。其输入是由tag标签通过标签属性引入的。
+
+  ```js
+    import { Component, OnInit } from '@angular/core';
+    import { Input } from '@angular/core';
+    //other code ...
+    export class ProductAlertsComponent implements OnInit {
+      @Input() product;
+      constructor() { }
+      ngOnInit() { }
+    }
+  ```
+
+  ```HTML
+    <app-product-alerts [product]="product"></app-product-alerts>
+  ```
+
+  - `@Output`装饰器和 `EventEmitter`事件发射器。两个一般搭配使用。作为输出信息的方法。 **父组件通过监听事件的方法来获取子组件所发出的信息**
+
+  ```js
+  //child-component
+  export class ProductAlertsComponent {
+    @Input() product;
+    @Output() notify = new EventEmitter();
+  }
+
+  //father-component
+  export class ProductListComponent {
+    products = products;
+
+    share() {
+      window.alert('The product has been shared!');
+    }
+
+    onNotify() {
+      window.alert('You will be notified when the product goes on sale');
+    }
+  }
+  ```
+
+  ```html
+  <p *ngIf="product.price > 700">
+    <button (click)="notify.emit()">Notify Me</button>
+  </p>
+  ```
+
+  - `@Injectable`装饰器把所在的类标注为 **依赖注入系统** 的参与者之一，它所接受的参数也是注入所需的 **元数据**。
+
+  ```js
+    import { Injectable } from '@angular/core';
+
+    @Injectable({
+      providedIn: 'root',
+    })
+    export class HeroService {
+
+      constructor() { }
+
+    }
+  ```
+
+4. 路由：使用路由的需要现在 **module文件** 中引入路由信息。如要在每个 **组件** 中获取路由信息，需要在该组件中导入路由对象来引入路由信息，在html中通过`[routerLink]="['/product',productId]"` 来使用路由。
+  
+  ```js
+  //app.module.ts
+  @NgModule({
+  imports: [
+    BrowserModule,
+    ReactiveFormsModule,
+    RouterModule.forRoot([
+      { path: '', component: ProductListComponent },
+      { path: 'products/:productId', component: ProductDetailsComponent },
+    ])
+  ],
+
+  //xxx.component.ts
+  import { ActivatedRoute } from '@angular/router';
+  export class ProductDetailsComponent implements OnInit {
+    product;
+
+    constructor(
+      private route: ActivatedRoute,
+    ) { }
+    ngOnInit() {
+      this.route.paramMap.subscribe(params => {
+        this.product = products[+params.get('productId')];
+      });
+    }
+  }
+  ```
